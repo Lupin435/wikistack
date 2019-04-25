@@ -1,17 +1,32 @@
 const morgan = require('morgan');
 const express = require('express');
-const { db } = require('./models');
+const models = require('./models');
+const wikiRouter = require('./routes/wiki');
+const userRouter = require('./routes/user');
+
 const app = express();
+
 
 app.use(express.static(__dirname + '/public'));
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: false }));
+app.use('/wiki', wikiRouter);
 
 app.get('/', (req, res, next) => {
-    res.send('hello world');
+    res.redirect('/wiki');
 })
 
-db.authenticate().
-then(() => {
-  console.log('connected to the database');
-})
+const PORT = 1337;
+
+const init = async() => {
+    await models.db.sync( {
+        force: true
+    });
+
+    console.log('db synced');
+    app.listen(PORT, () => {
+        console.log(`Server is listening on port ${PORT}`);
+    })
+}
+
+init();
